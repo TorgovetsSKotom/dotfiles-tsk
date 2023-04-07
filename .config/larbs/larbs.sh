@@ -10,7 +10,7 @@
 dotfilesrepo="https://github.com/TorgovetsSKotom/dotfiles-tsk.git"
 progsfile="https://github.com/TorgovetsSKotom/dotfiles-tsk/master/.config/larbs/progs.csv"
 aurhelper="paru"
-repobranch="master"
+#repobranch="main"
 export TERM=ansi
 
 ### ФУНКЦИИ ###
@@ -182,18 +182,36 @@ installationloop() {
 	done </tmp/progs.csv
 }
 
-putgitrepo() {
-	# Downloads a gitrepo $1 and places the files in $2 only overwriting conflicts
-	whiptail --infobox "Призыв святых Гита и Дотфайлс..." 7 60
-	[ -z "$3" ] && branch="master" || branch="$repobranch"
-	dir=$(mktemp -d)
-	[ ! -d "$2" ] && mkdir -p "$2"
-	chown "$name":wheel "$dir" "$2"
-	sudo -u "$name" git -C "$repodir" clone --depth 1 \
-		--single-branch --no-tags -q --recursive -b "$branch" \
-		--recurse-submodules "$1" "$dir"
-	sudo -u "$name" cp -rfT "$dir" "$2"
+gitdotsput() {"$dotfilesrepo"
+    whiptail --infobox "Призыв святых Гита и Дотфайлс..." 7 60
+    git clone --bare "$1" $HOME/.cfg
+    function config {
+       /usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME $@
+    }
+    mkdir -p .config-backup
+    config checkout
+    if [ $? = 0 ]; then
+      echo "Checked out config.";
+      else
+        echo "Backing up pre-existing dot files.";
+        config checkout 2>&1 | egrep "\s+\." | awk {'print $1'} | xargs -I{} mv {} .config-backup/{}
+    fi;
+    config checkout
+    config config status.showUntrackedFiles no
 }
+
+#putgitrepo() {
+#	# Downloads a gitrepo $1 and places the files in $2 only overwriting conflicts
+#	whiptail --infobox "Призыв святых Гита и Дотфайлс..." 7 60
+#	[ -z "$3" ] && branch="master" || branch="$repobranch"
+#	dir=$(mktemp -d)
+#	[ ! -d "$2" ] && mkdir -p "$2"
+#	chown "$name":wheel "$dir" "$2"
+#	sudo -u "$name" git -C "$repodir" clone --depth 1 \
+#		--single-branch --no-tags -q --recursive -b "$branch" \
+#		--recurse-submodules "$1" "$dir"
+#	sudo -u "$name" cp -rfT "$dir" "$2"
+#}
 
 vimplugininstall() {
 	# TODO remove shortcuts error message
@@ -339,8 +357,9 @@ installationloop
 
 # Install the dotfiles in the user's home directory, but remove .git dir and
 # other unnecessary files.
-putgitrepo "$dotfilesrepo" "/home/$name" "$repobranch"
-rm -rf "/home/$name/.git/" "/home/$name/README.md" "/home/$name/LICENSE" "/home/$name/FUNDING.yml"
+gitdotsput "$dotfilesrepo"
+#gitdotsput "$dotfilesrepo" "/home/$name" "$repobranch"
+#rm -rf "/home/$name/.git/" "/home/$name/README.md" "/home/$name/LICENSE" "/home/$name/FUNDING.yml"
 
 # Install vim plugins if not alread present.
 [ ! -f "/home/$name/.config/nvim/autoload/plug.vim" ] && vimplugininstall
