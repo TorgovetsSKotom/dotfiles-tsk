@@ -10,6 +10,7 @@
 dotfilesrepo="https://github.com/TorgovetsSKotom/dotfiles-tsk.git"
 progsfile="https://github.com/TorgovetsSKotom/dotfiles-tsk/master/.config/larbs/progs.csv"
 aurhelper="paru"
+cpucore=4
 #repobranch="main"
 export TERM=ansi
 
@@ -182,20 +183,13 @@ installationloop() {
 	done </tmp/progs.csv
 }
 
-gitdotsput() {"$dotfilesrepo"
+gitdotsput() {
     whiptail --infobox "Призыв святых Гита и Дотфайлс..." 7 60
+    alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
     git clone --bare "$1" $HOME/.cfg
     function config {
        /usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME $@
     }
-    mkdir -p .config-backup
-    config checkout
-    if [ $? = 0 ]; then
-      echo "Checked out config.";
-      else
-        echo "Backing up pre-existing dot files.";
-        config checkout 2>&1 | egrep "\s+\." | awk {'print $1'} | xargs -I{} mv {} .config-backup/{}
-    fi;
     config checkout
     config config status.showUntrackedFiles no
 }
@@ -217,75 +211,26 @@ vimplugininstall() {
 	# TODO remove shortcuts error message
 	# Installs vim plugins.
 	whiptail --infobox "Мобилизируем залупышей nvim..." 7 60
+    sudo pacman 
 	mkdir -p "/home/$name/.config/nvim/autoload"
 	curl -Ls "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim" >  "/home/$name/.config/nvim/autoload/plug.vim"
 	chown -R "$name:wheel" "/home/$name/.config/nvim"
 	sudo -u "$name" nvim -c "PlugInstall|q|q"
 }
 
-#makeuserjs(){
-#	# Get the Arkenfox user.js and prepare it.
-#	arkenfox="$pdir/arkenfox.js"
-#	overrides="$pdir/user-overrides.js"
-#	userjs="$pdir/user.js"
-#	ln -fs "/home/$name/.config/firefox/larbs.js" "$overrides"
-#	[ ! -f "$arkenfox" ] && curl -sL "https://raw.githubusercontent.com/arkenfox/user.js/master/user.js" > "$arkenfox"
-#	cat "$arkenfox" "$overrides" > "$userjs"
-#	chown "$name:wheel" "$arkenfox" "$userjs"
-#	# Install the updating script.
-#	mkdir -p /usr/local/lib /etc/pacman.d/hooks
-#	cp "/home/$name/.local/bin/arkenfox-auto-update" /usr/local/lib/
-#	chown root:root /usr/local/lib/arkenfox-auto-update
-#	chmod 755 /usr/local/lib/arkenfox-auto-update
-#	# Trigger the update when needed via a pacman hook.
-#	echo "[Trigger]
-#Operation = Upgrade
-#Type = Package
-#Target = firefox
-#Target = librewolf
-#Target = librewolf-bin
-#[Action]
-#Description=Update Arkenfox user.js
-#When=PostTransaction
-#Depends=arkenfox-user.js
-#Exec=/usr/local/lib/arkenfox-auto-update" > /etc/pacman.d/hooks/arkenfox.hook
-#}
-
-#installffaddons(){
-#	addonlist="ublock-origin decentraleyes istilldontcareaboutcookies vim-vixen"
-#	addontmp="$(mktemp -d)"
-#	trap "rm -fr $addontmp" HUP INT QUIT TERM PWR EXIT
-#	IFS=' '
-#	sudo -u "$name" mkdir -p "$pdir/extensions/"
-#	for addon in $addonlist; do
-#		addonurl="$(curl --silent "https://addons.mozilla.org/en-US/firefox/addon/${addon}/" | grep -o 'https://addons.mozilla.org/firefox/downloads/file/[^"]*')"
-#		file="${addonurl##*/}"
-#		sudo -u "$name" curl -LOs "$addonurl" > "$addontmp/$file"
-#		id="$(unzip -p "$file" manifest.json | grep "\"id\"")"
-#		id="${id%\"*}"
-#		id="${id##*\"}"
-#		sudo -u "$name" mv "$file" "$pdir/extensions/$id.xpi"
-#	done
-#	# Fix a Vim Vixen bug with dark mode not fixed on upstream:
-#	sudo -u "$name" mkdir -p "$pdir/chrome"
-#	[ ! -f  "$pdir/chrome/userContent.css" ] && sudo -u "$name" echo ".vimvixen-console-frame { color-scheme: light !important; }
-#category-more-from-mozilla { display: none !important }" > "$pdir/chrome/userContent.css"
-#}
-
 ohmyzshinstall() {
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-	wait
-	yay -S powerline-fonts
-	git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-	git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/zsh-completions
-	git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-	git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
-	git clone https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes
-	sudo pacman -Sqy --needed --noconfirm awesome-terinal-fonts
-	wait
-	autoload -Uz compinit && compinit
-	source $ZSH/oh-my-zsh.sh
-	export PATH=~/.zshrc:$PATH
+    whiptail --title "Oh my zsh!" \
+		    --msgbox "Уверуйте!" 13 80
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" 
+    $aurhelper -Sqy --needed --noconfirm powerline-fonts awesome-terinal-fonts
+    git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+    git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:=~/.oh-my-zsh/custom}/plugins/zsh-completions
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+    git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
+    git clone https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes
+    autoload -Uz compinit && compinit
+    source $ZSH/oh-my-zsh.sh
+    export PATH=~/.zshrc:$PATH
 }
 
 finalize() {
@@ -345,9 +290,9 @@ grep -q "ILoveCandy" /etc/pacman.conf || sed -i "/#VerbosePkgLists/a ILoveCandy"
 sed -Ei "s/^#(ParallelDownloads).*/\1 = 5/;/^#Color$/s/#//" /etc/pacman.conf
 
 # Use all cores for compilation.
-sed -i "s/-j2/-j$(nproc)/;/^#MAKEFLAGS/s/^#//" /etc/makepkg.conf
+sed -i "s/-j$cpucore/-j$(nproc)/;/^#MAKEFLAGS/s/^#//" /etc/makepkg.conf
 
-manualinstall yay || error "AUR временно не очень."
+manualinstall $aurhelper || error "AUR временно не очень."
 
 # The command that does all the installing. Reads the progs.csv file and
 # installs each needed program the way required. Be sure to run this only after
@@ -390,26 +335,6 @@ echo "export \$(dbus-launch)" >/etc/profile.d/dbus.sh
 	# Enable left mouse button by tapping
 	Option "Tapping" "on"
 EndSection' >/etc/X11/xorg.conf.d/40-libinput.conf
-
-# All this below to get Librewolf installed with add-ons and non-bad settings.
-#
-#whiptail --infobox "Setting browser privacy settings and add-ons..." 7 60
-#
-#browserdir="/home/$name/.librewolf"
-#profilesini="$browserdir/profiles.ini"
-
-# Start librewolf headless so it generates a profile. Then get that profile in a variable.
-#sudo -u "$name" librewolf --headless >/dev/null 2>&1 &
-#sleep 1
-#profile="$(sed -n "/Default=.*.default-release/ s/.*=//p" "$profilesini")"
-#pdir="$browserdir/$profile"
-
-#[ -d "$pdir" ] && makeuserjs
-
-#[ -d "$pdir" ] && installffaddons
-
-# Kill the now unnecessary librewolf instance.
-#pkill -u "$name" librewolf
 
 # Allow wheel users to sudo with password and allow several system commands
 # (like `shutdown` to run without password).
