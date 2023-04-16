@@ -15,8 +15,9 @@ setxkbmap -model pc105 -layout us,ru -option grp:caps_toggle &
 xsetroot -cursor_name left_ptr &
 wmname LG3D
 numlockx on &
-picom --config $HOME/.config/bspwm/picom.conf &
+picom --config $HOME/.config/picom.conf &
 #/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
 dunst &
-slstatus &
+#slstatus &
+dwmblocks &
 exec dwm

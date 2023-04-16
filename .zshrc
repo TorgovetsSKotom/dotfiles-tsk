@@ -187,3 +187,4 @@ source /usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.
 
 
 alias config='/usr/bin/git --git-dir=/home/tsk/.cfg/ --work-tree=/home/tsk'
+export FZF_BASE=/usr/bin/fzf
