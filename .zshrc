@@ -1,5 +1,6 @@
 export TERM="kitty"
-export PATH=$JAVA_HOME/bin:$HOME/bin:/usr/local/bin:$HOME.go/bin:$HOME.local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:$HOME.local/share/thumbnailers:$HOME.bin:$PATH
+export PATH=$JAVA_HOME/bin:/usr/local/bin:$HOME/.go/bin:$HOME/.local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:$HOME/.local/share/thumbnailers:$PATH
+export PATH="$PATH:${$(find ~/.bin -type d -printf %p:)%%:}"
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk/
 export ZSH="$HOME/.oh-my-zsh"
 export BROWSER=qutebrowser
@@ -8,6 +9,7 @@ export EDITOR=nvim
 export GOBIN=$HOME.go/bin
 export LANG=ru_RU.UTF-8
 export SHELL=/bin/zsh
+
 # export XDG_CACHE_HOME=$HOME.cache
 # export XDG_CONFIG_HOME=$HOME.config
 DISABLE_MAGIC_FUNCTIONS=true
@@ -89,8 +91,8 @@ POWERLEVEL9K_NODE_ICON='%fvia %F{green}⬢'
 
 ############ END- POWERLEVEL THEME SETTINGS ##############
 
-plugins=(git archlinux pip python web-search fzf  aliases vundle gas command-not-found extract git zsh-autosuggestions zsh-completions zsh-syntax-highlighting zsh-history-substring-search)
-
+plugins=(git archlinux fzf aliases vundle gas command-not-found extract git zsh-autosuggestions zsh-completions zsh-syntax-highlighting zsh-history-substring-search)
+#web-search pip python
 source $ZSH/oh-my-zsh.sh
 
 if [[ -n $SSH_CONNECTION ]]; then
@@ -100,7 +102,6 @@ else
 fi
 
 alias config='/usr/bin/git --git-dir=/home/torgovetsskotom/.cfg/ --work-tree=/home/torgovetsskotom'
-
 
 # Luke's config for the Zoomer Shell
 
@@ -188,3 +189,4 @@ source /usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.
 
 alias config='/usr/bin/git --git-dir=/home/tsk/.cfg/ --work-tree=/home/tsk'
 export FZF_BASE=/usr/bin/fzf
+unalias lf

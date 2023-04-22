@@ -11,12 +11,22 @@ if [ -d /etc/X11/xinit/xinitrc.d ]; then
   unset f
 fi
 
+#autostart=""
+
+#for program in $autostart; do
+#	pidof -s "$program" || "$program" &
+#done > /dev/null 2>&1
+
 setxkbmap -model pc105 -layout us,ru -option grp:caps_toggle &
 xsetroot -cursor_name left_ptr &
 wmname LG3D
 numlockx on &
-picom --config $HOME/.config/picom.conf &
+#picom --config $HOME/.config/picom.conf &
+xcompmgr &
+pipewire &
+xwallpaper --zoom ".config/bg.jpg" &
 #/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+mpd &
 dunst &
 #slstatus &
 dwmblocks &
