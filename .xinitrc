@@ -30,6 +30,5 @@ xwallpaper --zoom ".config/bg.jpg" &
 #/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
 mpd &
 dunst &
-#slstatus &
-dwmblocks &
+slstatus &
 exec dwm
