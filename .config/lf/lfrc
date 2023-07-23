@@ -1,32 +1,30 @@
-# Luke's lf settings
-
-
-# Note on Image Previews
-# For those wanting image previews, like this system, there are four steps to
-# set it up. These are done automatically for LARBS users, but I will state
-# them here for others doing it manually.
-#
-# 1. ueberzug must be installed.
-# 2. The scope file (~/.config/lf/scope for me), must have a command similar to
-#    mine to generate ueberzug images.
-# 3. A `set cleaner` line as below is a cleaner script.
-# 4. lf should be started through a wrapper script (~/.local/bin/lfub for me)
-#    that creates the environment for ueberzug. This command can be be aliased
-#    in your shellrc (`alias lf="lfub") or if set to a binding, should be
-#    called directly instead of normal lf.
-
-# Basic vars
+set shell zsh
 set shellopts '-eu'
 set ifs "\n"
+set filesep "\n"
 set scrolloff 10
 set icons
 set period 1
 set hiddenfiles ".*:*.aux:*.log:*.bbl:*.bcf:*.blg:*.run.xml"
-set cleaner '~/.config/lf/cleaner'
-set previewer '~/.config/lf/scope'
-set autoquit on
+set preview
+set previewer ctpv
+set cleaner ctpvclear
+&ctpv -s $id
+&ctpvquit $id
+set autoquit
+set mouse
+set incsearch
+set smartcase
+set ignorecase
+set anchorfind false
+set findlen 1
+set tabstop 4
+set info 'size'
+set dircounts
 
-# cmds/functions
+#source "~/.config/lf/shortcutrc"
+
+
 cmd open ${{
     case $(file --mime-type "$(readlink -f $f)" -b) in
 	application/vnd.openxmlformats-officedocument.spreadsheetml.sheet) localc $fx ;;
@@ -44,18 +42,38 @@ cmd open ${{
 	audio/*|video/x-ms-asf) mpv --audio-display=no $f ;;
 	video/*) setsid -f mpv $f -quiet >/dev/null 2>&1 ;;
 	application/pdf|application/vnd.djvu|application/epub*) setsid -f zathura $fx >/dev/null 2>&1 ;;
-	application/pgp-encrypted) $EDITOR $fx ;;
-	application/vnd.openxmlformats-officedocument.wordprocessingml.document|application/vnd.oasis.opendocument.text) setsid -f lowriter $fx >/dev/null 2>&1 ;;
-	application/vnd.openxmlformats-officedocument.spreadsheetml.sheet|application/octet-stream|application/vnd.oasis.opendocument.spreadsheet|application/vnd.oasis.opendocument.spreadsheet-template) setsid -f localc $fx >/dev/null 2>&1 ;;
-	application/vnd.openxmlformats-officedocument.presentationml.presentation|application/vnd.oasis.opendocument.presentation-template|application/vnd.oasis.opendocument.presentation|application/vnd.ms-powerpoint) setsid -f loimpress $fx >/dev/null 2>&1 ;;
-	application/vnd.oasis.opendocument.graphics|application/vnd.oasis.opendocument.graphics-template) setsid -f lodraw $fx >/dev/null 2>&1 ;;
-	application/vnd.oasis.opendocument.formula) setsid -f lomath $fx >/dev/null 2>&1 ;;
-	application/vnd.oasis.opendocument.database) setsid -f lobase $fx >/dev/null 2>&1 ;;
         *) for f in $fx; do setsid -f $OPENER $f >/dev/null 2>&1; done;;
     esac
 }}
 
-cmd mkdir $mkdir -p "$(echo $* | tr ' ' '\ ')"
+#cmd open ${{
+#    test -L $f && f=$(readlink -f $f)
+#    case $(file --mime-type $f -b) in
+#        text/*) $EDITOR $fx;;
+#        application/json) $EDITOR $fx;;
+#        *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
+#    esac
+#}}
+
+cmd openwith %"$@" "$fx"
+
+cmd chmod ${{
+  printf "\nMode Bits: "
+  read ans
+  for file in "$fx"
+  do
+    chmod $ans $file
+  done
+  lf -remote 'send reload'
+}}
+
+cmd toggle_preview %{{
+    if [ "$lf_preview" = "true" ]; then
+        lf -remote "send $id :set preview false; set ratios 1:5"
+    else
+        lf -remote "send $id :set preview true; set ratios 1:2:3"
+    fi
+}}
 
 cmd extract ${{
 	clear; tput cup $(($(tput lines)/3)); tput bold
@@ -66,14 +84,22 @@ cmd extract ${{
 	[ $ans = "y" ] && aunpack $fx
 }}
 
-cmd delete ${{
-	clear; tput cup $(($(tput lines)/3)); tput bold
-	set -f
-	printf "%s\n\t" "$fx"
-	printf "delete?[y/N]"
-	read ans
-	[ $ans = "y" ] && rm -rf -- $fx
-}}
+#cmd extract ${{
+#  set -f
+#  archive="${fx%.*}"
+#  mkdir "$archive"
+#  cd "$archive"
+#  case $f in
+#    *.tar.bz|*.tar.bz2|*.tbz|*.tbz2) tar xjvf $f;;
+#    *.tar.gz|*.tgz) tar xzvf $f;;
+#    *.tar.xz|*.txz) tar xJvf $f;;
+#    *.tar) tar xvf $f;;
+#    *.zip) unzip $f;;
+#    *.rar) unrar x $f;;
+#    *.7z) 7z x $f;;
+#    *) echo "Unsupported format";;
+#  esac
+#}}
 
 cmd moveto ${{
 	clear; tput cup $(($(tput lines)/3)); tput bold
@@ -97,42 +123,237 @@ cmd copyto ${{
 	notify-send "📋 File(s) copied." "File(s) copies to $dest."
 }}
 
-cmd setbg "$1"
-cmd bulkrename $vidir
+#cmd paste &{{
+#    set -- $(cat ~/.local/share/lf/files)
+#    mode="$1"
+#    shift
+#    case "$mode" in
+#        copy)
+#            rsync -av --ignore-existing --progress -- "$@" . |
+#            stdbuf -i0 -o0 -e0 tr '\r' '\n' |
+#            while IFS= read -r line; do
+#                lf -remote "send $id echo $line"
+#            done
+#            ;;
+#        move) mv -n -- "$@" .;;
+#    esac
+#    rm ~/.local/share/lf/files
+#    lf -remote "send clear"
+#}}
 
-# Bindings
-map <c-f> $lf -remote "send $id select \"$(fzf)\""
-map J $lf -remote "send $id cd $(sed -e 's/\s*#.*//' -e '/^$/d' -e 's/^\S*\s*//' ${XDG_CONFIG_HOME:-$HOME/.config}/shell/bm-dirs | fzf)"
+cmd new-folder-with-selection ${{
+  set -f
+  printf "Directory name: "
+  read newd
+  mkdir -- "$newd"
+  mv -- $fx "$newd"
+}}
+
+cmd mkdir $mkdir -p "$(echo $* | tr ' ' '\ ')"
+
+#cmd trash !{{
+#  set -f
+#  printf "Items to be trashed:\n$fx\n\nTrash? [y/N]"
+#  read ans
+#  if [[ $ans == "y" ]]; then
+#    trash -F $fx && echo "Trash complete!"
+#  elif [[ $ans == "n" ]]; then
+#    echo "Canceled!"
+#  else
+#    echo "Failed! Use y to trash."
+#  fi
+#}}
+
+cmd trash ${{
+  files=$(printf "$fx" | tr '\n' ';')
+  while [ "$files" ]; do
+    file=${files%%;*}
+    trash-put "$(basename "$file")"
+    if [ "$files" = "$file" ]; then
+      files=''
+    else
+      files="${files#*;}"
+    fi
+  done
+}}
+
+cmd clear_trash %trash-empty
+
+cmd restore_trash ${{
+  trash-restore
+}}
+
+cmd tar ${{
+    set -f
+    mkdir $1
+    cp -r $fx $1
+    tar czf $1.tar.gz $1
+    rm -rf $1
+}}
+
+cmd zip ${{
+    set -f
+    mkdir $1
+    cp -r $fx $1
+    zip -r $1.zip $1
+    rm -rf $1
+}}
+
+cmd delete ${{
+	clear; tput cup $(($(tput lines)/3)); tput bold
+	set -f
+	printf "%s\n\t" "$fx"
+	printf "delete?[y/N]"
+	read ans
+	[ $ans = "y" ] && rm -rf -- $fx
+}}
+
+cmd bulk-rename ${{
+  old="$(mktemp)"
+  new="$(mktemp)"
+  if [ -n "$fs" ]; then
+    fs="$(basename $fs)"
+  else
+    fs="$(ls)"
+  fi
+  printf '%s\n' "$fs" >"$old"
+  printf '%s\n' "$fs" >"$new"
+  $EDITOR "$new"
+  [ "$(wc -l < "$new")" -ne "$(wc -l < "$old")" ] && exit
+  paste "$old" "$new" | while IFS= read -r names; do
+    src="$(printf '%s' "$names" | cut -f1)"
+    dst="$(printf '%s' "$names" | cut -f2)"
+    if [ "$src" = "$dst" ] || [ -e "$dst" ]; then
+        continue
+    fi
+    mv -- "$src" "$dst"
+  done
+  rm -- "$old" "$new"
+  lf -remote "send $id unselect"
+}}
+
+cmd yank-dirname $dirname -- "$f" | head -c-1 | xclip -i -selection clipboard
+cmd yank-path $printf '%s' "$fx" | xclip -i -selection clipboard
+cmd yank-basename $basename -a -- $fx | head -c-1 | xclip -i -selection clipboard
+cmd yank-basename-without-extension &basename -a -- $fx | cut -d. -f1 | head -c-1 | xclip -i -selection clipboard
+
+cmd fzf-select ${{
+  IFS=' '
+  exclude=$(cat $HOME/exclude | sed 's/^/--exclude /' | tr '\n' ' ')
+  select=$(fd --hidden --follow $exclude | fzf)
+  lf -remote "send $id select $select"
+}}
+
+cmd fzf-cd ${{
+  IFS=' '
+  exclude=$(cat $HOME/exclude | sed 's/^/--exclude /' | tr '\n' ' ')
+  select=$(fd --type d --hidden --follow $exclude | fzf)
+  lf -remote "send $id cd $select"
+}}
+
+cmd fzf_search ${{
+    res="$( \
+        RG_PREFIX="rg --column --line-number --no-heading --color=always \
+            --smart-case "
+        FZF_DEFAULT_COMMAND="$RG_PREFIX ''" \
+            fzf --bind "change:reload:$RG_PREFIX {q} || true" \
+            --ansi --layout=reverse --header 'Search in files' \
+            | cut -d':' -f1
+    )"
+    [ ! -z "$res" ] && lf -remote "send $id select \"$res\""
+}}
+
+cmd img ${{
+    sxiv *.png *.jpg *.svg *.jpeg 2>/dev/null
+}}
+
+cmd diskmount ${{
+  target_vol=$(lsblk | fzf --reverse | sed 's/^[^[:alnum:]]*//' | cut -d' ' -f1)
+  if [[ $(lsblk -o NAME,FSTYPE | sed 's/^[^[:alnum:]]*//' | grep "$target_vol" | awk '{print $2}') == "crypto_LUKS" ]]; then
+  	echo "Volume is encrypted"
+  	udisksctl unlock -b /dev/"$target_vol"
+  	list_mount
+  	exit 0
+  fi
+  if [[ $(lsblk -o NAME,RM | sed 's/^[^[:alnum:]]*//' | grep "$target_vol " | awk '{print $2}') -eq 1 ]]; then
+  	removable=true
+  else
+  	removable=false
+  fi
+  if [[ -e /dev/"$target_vol" ]]; then
+  	target_vol="/dev/$target_vol"
+  elif [[ -e /dev/mapper/"$target_vol" ]]; then
+  	target_vol="/dev/mapper/$target_vol"
+  else
+  	echo "Something vent wrong, no such volume?"
+  fi
+  if $removable; then
+  	udisksctl mount -b "$target_vol"
+  	echo "Press Return to continue"
+  	read
+  else
+  	echo "Input mountpoint:"
+  	read mountpoint
+  	while ! [[ -d "$mountpoint" ]]; do
+  		sudo mkdir -p "$mountpoint" ||\
+  		echo "$mountpoint is not a possible mountpoint.
+  Input new mountpoint:" && read mountpoint
+  	done
+  	sudo mount "$target_vol" "$mountpoint" && \
+  	echo "Mounted $target_vol to $mountpoint
+  Press Return to continue"
+  read
+  fi
+}}
+
 map gh
+map <space>
+
+#map e $$EDITOR "$f"
+#map i $$PAGER "$f"
+#map w $$SHELL
+
+map JJ cd /run/media/tsk
 map g top
-map D delete
+#bottom('G')
+map o open
+map O openwith
+map zp toggle_preview
+map <c-p> img
+map <c-t> diskmount
+map <enter> open
+map <c-enter> shell
+
+#File
+map Y copyto
+map U moveto
+map d # cut
+map y # copy
+map D trash
+map tc clear_trash
+map tr restore_trash
+map DD delete
+map <c-n> mkdir
+map <a-n> new-folder-with-selection
+map r bulk-rename
+map <a-X> chmod
+
+#Yanks
+map yd yank-dirname
+map yp yank-path
+map yn yank-basename
+map ye yank-basename-without-extension
+
+#Archive
 map E extract
-map C copyto
-map M moveto
-map <c-n> push :mkdir<space>
-map <c-r> reload
-map <c-s> set hidden!
-map <enter> shell
-map x $$f
-map X !$f
-map o &mimeopen "$f"
-map O $mimeopen --ask "$f"
+map <c-c> zip
+map <a-c> tar
 
-map A rename # at the very end
-map c push A<c-u> # new rename
-map I push A<c-a> # at the very beginning
-map i push A<a-b><a-b><a-f> # before extension
-map a push A<a-b> # after extension
-map B bulkrename
-map b $setbg $f
+#Fzf
+map <c-f> fzf-select
+map <c-j> fzf-cd
+map <c-s> fzf_search
 
-map <c-e> down
-map <c-y> up
-map V push :!nvim<space>
 
-map W $setsid -f $TERMINAL >/dev/null 2>&1
-
-map Y $printf "%s" "$fx" | xclip -selection clipboard
-
-# Source Bookmarks
-source "~/.config/lf/shortcutrc"
+#map <c-n> push :mkdir<space>
+#map V push :!nvim<space>

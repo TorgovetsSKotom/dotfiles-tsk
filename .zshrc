@@ -2,6 +2,7 @@ export TERM="kitty"
 export PATH=$JAVA_HOME/bin:/usr/local/bin:$HOME/.go/bin:$HOME/.local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:$HOME/.local/share/thumbnailers:$PATH
 export PATH="$PATH:${$(find ~/.bin -type d -printf %p:)%%:}"
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk/
+export FREEPLANE_JAVA_HOME=/usr/lib/jvm/java-11-openjdk
 export ZSH="$HOME/.oh-my-zsh"
 export BROWSER=qutebrowser
 export CUDA_PATH=/opt/cuda
@@ -98,10 +99,10 @@ source $ZSH/oh-my-zsh.sh
 if [[ -n $SSH_CONNECTION ]]; then
   export EDITOR='vim'
 else
-  export EDITOR='mvim'
+  export EDITOR='nvim'
 fi
 
-alias config='/usr/bin/git --git-dir=/home/torgovetsskotom/.cfg/ --work-tree=/home/torgovetsskotom'
+alias config='/usr/bin/git --git-dir=/home/tsk/.cfg/ --work-tree=/home/tsk'
 
 # Luke's config for the Zoomer Shell
 
