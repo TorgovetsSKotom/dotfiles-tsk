@@ -1,0 +1,82 @@
+*{
+	all: unset;
+	font-family: feather;
+	font-family: Iosevka;
+}
+
+// window {
+// 	background-color: #121212;
+// 	  color: #ffd5cd;
+// 	font-family: Museo Sans;
+// }
+  
+// button {
+// 	all: unset;
+// 	background-color: #121212;
+// 	padding: 10px;
+// }
+
+.genwin {
+	background-color: #282c34;
+	border-radius: 16px;
+}
+
+.lbcpu, .lbmem {
+	font-size : 32px;
+	font-weight : normal;
+}
+
+.lbcpu {
+	color: #BF616A;
+}
+
+.lbmem {
+	color: #A3BE8C;
+}
+
+.cpu_bar, .mem_bar, .bright_bar, .bat_bar, scale trough {
+	all: unset;
+	background-color: #3A404C;
+	border-radius: 16px;
+	min-height: 28px;
+	min-width: 240px;
+}
+
+.cpu_bar, .mem_bar, .bright_bar, .bat_bar, scale trough highlight {
+	all: unset;
+	border-radius: 16px;
+}
+
+.cpu_bar scale trough highlight {
+	background-color: #BF616A;
+}
+.mem_bar scale trough highlight {
+	background-color: #A3BE8C;
+}
+.bright_bar scale trough highlight {
+	background-color: #EBCB8B;
+}
+.bat_bar scale trough highlight {
+	background-color: #88C0D0;
+}
+
+.time {
+	color: #81A1C1;
+	font-size : 70px;
+	font-weight : bold;
+	// display: flex;
+	// align-items: center;
+	margin : 0px 0px 0px 0px;
+}
+
+.vpnl {
+	color: #81A1C1;
+	font-size : 14px;
+	font-weight : bold;
+	// display: flex;
+	// align-items: center;
+	// margin : 0px 0px 0px 0px;
+	// margin-left: 10px;
+	// margin-right: 10px;
+	// margin : auto auto auto auto;
+}

@@ -307,7 +307,6 @@ cmd diskmount ${{
 }}
 
 map gh
-map <space>
 
 #map e $$EDITOR "$f"
 #map i $$PAGER "$f"

@@ -1,0 +1,66 @@
+#!/bin/sh
+
+main () { parse_opts "$@"
+	# запуск в отдельном окне
+	# cmd="mpv --pause=no --panscan=1 --profile=low-latency --demuxer-lavf-format=video4linux2 --demuxer-lavf-o-set=input_format=mjpeg av://v4l2:/dev/video$camera --untimed --cache=no --force-seekable=no --no-osc --script-opts-add=osc-visibility=never --really-quiet --title=Webcam"
+	# запуск как обои
+	cmd="mpv --fs --wid=0 --pause=no --panscan=1 --profile=low-latency --demuxer-lavf-format=video4linux2 --demuxer-lavf-o-set=input_format=mjpeg av://v4l2:/dev/video$camera --untimed --cache=no --force-seekable=no --no-osc --script-opts-add=osc-visibility=never --really-quiet"
+	# cmd = "mpv --fs --loop --wid=0 'av://v4l2:/dev/video$camera'"
+	if [ -n "$toggle" ]; then
+		if [ $(ps axh | grep "$cmd" | wc -l) -le 1 ]; then cmd
+		elif [ $(xdotool search --onlyvisible --name Webcam | wc -l) -ge 1 ]
+		then xdotool windowunmap $(xdotool search --name Webcam)
+		else xdotool windowmap $(xdotool search --name Webcam); fi
+		# mpv --fs --loop --wid=$1 "$2"
+	else cmd; fi
+}
+
+cmd() {
+	active() { ps x | grep "$cmd"; }
+	if [ $(active | wc -l) -gt 1 ]; then
+		active | head -1 | awk {'print $1'} | xargs kill
+	else $cmd; fi
+}
+
+help() { printf 'Usage:\t%s' "$(basename $0) [options] [camera #]
+
+Options:
+-t|--toggle │ Hide/unhide $(basename $0)
+-h|--help   │ Print this help message and exit
+"; }
+
+parse_opts() {
+	: "${config_dir:=${XDG_CONFIG_HOME:-$HOME/.config}/$(basename $0)}"
+	: "${config_file:=$config_dir/$(basename $0).conf}"
+	[ -f "$config_file" ] && . "$config_file"
+
+	needs_arg() {
+		if [ -z "$OPTARG" ]; then
+			printf '%s\n' "No arg for --$OPT option" >&2
+			exit 2
+		fi
+	}
+
+	while getopts ht-: OPT; do
+		# Support long options: https://stackoverflow.com/a/28466267/519360
+		if [ "$OPT" = "-" ]; then
+			OPT="${OPTARG%%=*}"
+			OPTARG="${OPTARG#$OPT}"
+			OPTARG="${OPTARG#=}"
+		fi
+		case "$OPT" in
+			h | help) help ; exit 0 ;;
+			t | toggle) toggle=1 ;;
+			??*)
+				printf '%s\n' "Illegal option --$OPT" >&2
+				exit 2
+				;;
+			?) exit 2 ;;
+		esac
+	done
+	shift $((OPTIND-1))
+
+	[ -n "$1" ] && camera=$1 || camera=0
+}
+
+main "$@"

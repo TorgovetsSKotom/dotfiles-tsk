@@ -1,0 +1,106 @@
+;; Profile vars
+(defvar IMAGE "images/profile.jpg")
+(defvar NAME "TSK")
+(defpoll UNAME :interval "5m" `whoami`)
+
+;; System vars
+(defpoll HOST :interval "5s" `hostname`)
+(defpoll CPU_USAGE :interval "1s" `scripts/sys_info --cpu`)
+(defpoll MEM_USAGE :interval "1s" `scripts/sys_info --mem`)
+(defpoll BLIGHT :interval "1s" `scripts/sys_info --blight`)
+(defpoll BATTERY :interval "5s" `scripts/sys_info --bat`)
+
+;; Time vars
+(defpoll HOUR :interval "5s" "date +\"%I\"")
+(defpoll MIN :interval "5s" "date +\"%M\"")
+(defpoll MER :interval "5s" "date +\"%p\"")
+(defpoll DAY :interval "5s" "date +\"%A\"")
+
+;; Uptime vars
+(defpoll UPHOUR :interval "5s" "uptime -p | awk '{print $2 \" \" $3}' | sed 's/,//g'")
+(defpoll UPMIN :interval "5s" "uptime -p | awk '{print $4 \" \" $5}'")
+
+(defpoll git_names :interval "30s" `python scripts/git_trend.py name`)
+(defpoll git_hello :interval "30s" `python scripts/git_hello.py`)
+(defpoll todos :interval "30s" `python scripts/todo_obs.py`)
+
+(defvar time-visible false)
+
+(defpoll time :interval "1s"
+  :initial "-"
+  :run-while time-visible
+  `date +%H:%M:%S`)
+
+
+;; time
+(defwidget time [] 
+  (box :class "genwin" :orientation "v" :spacing 50 :space-evenly "false" :vexpand "false" :hexpand "false"
+    (label :class "time" :vexpand "true" :wrap "true" :limit-width 25 :text time)))
+
+;; stats
+(defwidget stats [] 
+  (box :class "genwin" :vexpand "false" :hexpand "false"
+    (box :orientation "v" :spacing 25 :halign "center" :valign "center" :space-evenly "false" :vexpand "false" :hexpand "false" 
+      (box :class "cpu_bar" :orientation "h" :spacing 20 :space-evenly "false" :vexpand "false" :hexpand "false" 
+        (label :class "lbcpu" :text "CPU ")
+        (scale :min 0 :max 100 :value CPU_USAGE :active "false"))
+      (box :class "mem_bar" :orientation "h" :spacing 20 :space-evenly "false" :vexpand "false" :hexpand "false" 
+        (label :class "lbmem" :text "MEM ")
+        (scale :min 0 :max 100 :value MEM_USAGE :active "false")))))
+
+;; github trends
+(defwidget github [] 
+  (box :class "genwin" :orientation "v" :spacing 50 :space-evenly "false" :vexpand "false" :hexpand "false"
+    (box :orientation "v"
+      (for name in git_names
+        ; (button :hexpand "true" :onclick "echo https://github.com/${name} | rofi -dmenu -m 1 -normal-window" name)
+        (button :hexpand "true" :onclick "vivaldi-stable https://github.com/${name}" name)))))
+; Или можно сделать кнопку запуска rofi, она сама запустит скрипт, выведет и инфу и позволит просмотреть и запустить
+; github Hello
+(defwidget githello [] 
+  (box :class "genwin" :orientation "v" :spacing 50 :space-evenly "false" :vexpand "false" :hexpand "false"
+    (box :orientation "v"
+      (for name in git_hello
+        (button :hexpand "true" :onclick "vivaldi https://github.com/${name}" name)))))
+
+;; todo
+(defwidget todo [] 
+  (box :class "genwin" :orientation "v" :spacing 50 :space-evenly "false" :vexpand "false" :hexpand "false"
+    (box :orientation "v"
+      (for todo in todos
+        (label :vexpand "true" :wrap "false" :text todo)))))
+
+; vpn toggle
+(defwidget vpn [] 
+  (box :class "genwin vpnl" :orientation "h" :spacing 50 :space-evenly "false" :vexpand "false" :hexpand "false"
+    ; (button :vexpand true :onclick "scripts/vpn_toggle start"
+    ;   (label :class "vpn" :vexpand true :wrap true :limit-width 25 :text "VPN ON"))
+    ; (button :vexpand true :onclick "scripts/vpn_toggle stop"
+    ;   (label :class "vpn" :vexpand true :wrap true :limit-width 25 :text "VPN OFF"))
+    ; (button :vexpand true :onclick "scripts/vpn_toggle config"
+    ;   (label :class "vpn" :vexpand true :wrap true :limit-width 25 :text "VPN CONF")
+    (button :hexpand true :onclick "sh scripts/vpn_toggle start" "VPN ON")
+    (button :hexpand true :onclick "sh scripts/vpn_toggle stop" "VPN OFF")
+    (button :hexpand true :onclick "sh scripts/vpn_toggle config" "VPN CONF")
+    
+    ))
+
+; init windows
+(defwindow time :stacking "bg" :windowtype "dock" :wm-ignore false :focusable false :monitor 0 :reserve (struts :distance "1px" :side "top")
+  :geometry (geometry :x "-11%" :y "50%" :width "350px" :height "130px" :anchor "top center")
+    (time))
+(defwindow stats :stacking "bg" :windowtype "dock" :wm-ignore false :focusable false :monitor 0 :reserve (struts :distance "1px" :side "top")
+  :geometry (geometry :x "12%" :y "50%" :width "350px" :height "130px" :anchor "top center")
+    (stats))
+(defwindow github :stacking "bg" :windowtype "dock" :wm-ignore false :focusable false :monitor 0 :reserve (struts :distance "1px" :side "top")
+  :geometry (geometry :x "36%" :y "20%" :width "450px" :height "500px" :anchor "top center")
+    (github))
+(defwindow githello :stacking "bg" :windowtype "dock" :wm-ignore false :focusable false :monitor 0 :reserve (struts :distance "1px" :side "top")
+  :geometry (geometry :x "20%" :y "20%" :width "450px" :height "500px" :anchor "top center")
+    (githello))
+(defwindow todo :stacking "bg" :windowtype "dock" :wm-ignore false :focusable false :monitor 0 :reserve (struts :distance "1px" :side "top")
+  :geometry (geometry :x "-36%" :y "20%" :width "500px" :height "200px" :anchor "top center")
+    (todo))
+(defwindow vpn :stacking "bg" :windowtype "dock" :wm-ignore false :focusable false :monitor 0 :reserve (struts :distance "1px" :side "top")
+  :geometry (geometry :x "0%" :y "20%" :width "350px" :height "40px" :anchor "top center")
+    (vpn))

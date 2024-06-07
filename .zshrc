@@ -1,12 +1,12 @@
 export TERM="kitty"
 export PATH=$JAVA_HOME/bin:/usr/local/bin:$HOME/.go/bin:$HOME/.local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:$HOME/.local/share/thumbnailers:$PATH
 export PATH="$PATH:${$(find ~/.bin -type d -printf %p:)%%:}"
-export JAVA_HOME=/usr/lib/jvm/java-8-openjdk/
-export FREEPLANE_JAVA_HOME=/usr/lib/jvm/java-11-openjdk
-export ZSH="$HOME/.oh-my-zsh"
-export BROWSER=qutebrowser
+#export JAVA_HOME=/usr/lib/jvm/java-8-openjdk/
+# export FREEPLANE_JAVA_HOME=/usr/lib/jvm/j
+# export ZSH="$HOME/.oh-my-zsh"
+export BROWSER=vivaldi-stable
 export CUDA_PATH=/opt/cuda
-export EDITOR=nvim
+export EDITOR=micro
 export GOBIN=$HOME.go/bin
 export LANG=ru_RU.UTF-8
 export SHELL=/bin/zsh
@@ -93,18 +93,13 @@ POWERLEVEL9K_NODE_ICON='%fvia %F{green}⬢'
 ############ END- POWERLEVEL THEME SETTINGS ##############
 
 plugins=(git archlinux fzf aliases vundle gas command-not-found extract git zsh-autosuggestions zsh-completions zsh-syntax-highlighting zsh-history-substring-search)
-#web-search pip python
-source $ZSH/oh-my-zsh.sh
+# web-search pip python
 
 if [[ -n $SSH_CONNECTION ]]; then
   export EDITOR='vim'
 else
   export EDITOR='nvim'
 fi
-
-alias config='/usr/bin/git --git-dir=/home/tsk/.cfg/ --work-tree=/home/tsk'
-
-# Luke's config for the Zoomer Shell
 
 # Enable colors and change prompt:
 autoload -U colors && colors	# Load colors
@@ -185,9 +180,17 @@ bindkey -M visual '^[[P' vi-delete
 # Load syntax highlighting; should be last.
 source /usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh 2>/dev/null
 
-
-
-
+alias cd='z'
+alias ls='lsd -la'
+alias find='fd'
+alias cat='bat'
+alias du='dust'
+alias df='duf'
+alias tree='broot'
+alias grep='grep --color=auto'
 alias config='/usr/bin/git --git-dir=/home/tsk/.cfg/ --work-tree=/home/tsk'
 export FZF_BASE=/usr/bin/fzf
 unalias lf
+
+source /home/tsk/.config/broot/launcher/bash/br
+eval "$(zoxide init zsh)"

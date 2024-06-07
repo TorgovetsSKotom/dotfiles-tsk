@@ -1,0 +1,46 @@
+#!/bin/bash
+# Version 1.2
+# @dlarchikov
+# cd /etc/openvpn/ && sudo openvpn --config "config/Netherlands, Amsterdam S1.ovpn"
+# Пароль заглушка ""
+action="$1"
+
+if [[ $action = '' ]]; then
+	echo "Action required.\n" $action
+	exit 2
+fi
+
+if [[ $action != 'run' && $action != 'start' && $action != 'stop' && $action != 'config' ]]; then
+	echo "Action invalid"
+	exit 2
+fi
+
+echo "Run action \"$1\""
+
+if [[ $action = 'run' || $action = 'start' ]]
+then
+	cd /etc/openvpn/ && sudo openvpn --config "config/Netherlands, Amsterdam S1.ovpn" --daemon
+fi
+
+if [[ $action = 'config' ]]
+then
+    selected_config=$(/bin/ls /etc/openvpn/config | sed 's/.ovpn//g' | rofi -dmenu -i -p "Select config")
+    if [[ -n "$selected_config" ]]; then
+		echo "Selected config: config/${selected_config}.ovpn"
+        cd /etc/openvpn/ && sudo openvpn --config "config/${selected_config}.ovpn"
+    fi
+fi
+
+if [[ $action = 'stop' ]]
+then
+	pid=`pgrep openvpn`
+
+	if [[ -n "$pid" && `echo $pid | wc -l` -gt 0 ]]
+	then
+		echo "PID: $pid"
+		echo "   " | sudo -S kill -9 $pid
+	else
+		echo "VPN already dead"
+
+	fi
+fi
