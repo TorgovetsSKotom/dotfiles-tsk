@@ -18,11 +18,18 @@ globalkeys = gears.table.join(
     awful.key({"Shift"},"Print", function() awful.util.spawn("flameshot launcher")
     end, { description = "flameshot launcher", group = "launcher" }),
 
-	awful.key({ modkey }, "z", function () term_scratch:toggle()
+	awful.key({ modkey }, "z", function() term_scratch:toggle()
 	end, {description = "dropdown terminal", group = "launcher"}),
-	awful.key({ modkey }, "x", function () fm_scratch:toggle()
-	end, {description = "dropdown file manager", group = "launcher"}),
+	-- awful.key({ modkey }, "x", function() fm_scratch:toggle()
+	-- end, {description = "dropdown file manager", group = "launcher"}),
 
+	awful.key({ modkey }, "c", function() awful.util.spawn("code")
+	end, {description = "vscode", group = "launcher"}),
+	awful.key({ modkey }, "v", function() awful.util.spawn("vivaldi")
+	end, {description = "vivaldi", group = "launcher"}),
+		awful.key({ modkey }, "f", function() awful.util.spawn("pcmanfm")
+	end, {description = "pcmanfm", group = "launcher"}),
+	
 	awful.key({ modkey }, "j", function()
 		awful.client.focus.byidx(1)
 	end, { description = "focus next by index", group = "client" }),

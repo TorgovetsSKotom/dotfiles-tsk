@@ -11,11 +11,6 @@ local themes = {
 	-- "rosybrown",
 }
 
-wallpapers = {
-   	theme_dir .. "default/background.jpg"
-    -- "/run/media/tsk/FATAL/Обои ласт/Обои upscaled"
-}
-
 local chosen_theme = themes[1]
 beautiful.init(theme_dir .. "/" .. chosen_theme .. "/theme.lua")
 terminal = "kitty"

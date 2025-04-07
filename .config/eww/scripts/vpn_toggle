@@ -19,7 +19,7 @@ echo "Run action \"$1\""
 
 if [[ $action = 'run' || $action = 'start' ]]
 then
-	cd /etc/openvpn/ && sudo openvpn --config "config/Netherlands, Amsterdam S1.ovpn" --daemon
+	cd /etc/openvpn/ && sudo openvpn --config "config/Turkey, Izmir L1.ovpn" --daemon
 fi
 
 if [[ $action = 'config' ]]
